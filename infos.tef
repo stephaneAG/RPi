@@ -1,0 +1,13 @@
+# troubles remembering the login password ?
+# plug the SD card containing the RPi sys on a laptop
+# check the file /etc/shadow
+# in it, a line should be like the following:
+pi:$6$3YkhpIdG$y4C5gTMdnVnhMND9Pe.MFRi3GiwFe0R6o94VquC6angH71HWOwY.v.BY/blzTz52bnG1XOcXuhNOpk85xQJfQ.:15710:0:99999:7:::
+# replace it like the following ( it 'll set an empty password, aka no password at all )
+pi::::
+# then after logging in as "pi", no password 'll be asked ;p
+
+# remember to set a new password using the following
+passwd pi
+# <new passord>
+# <new passord again>
