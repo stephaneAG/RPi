@@ -22,6 +22,9 @@ Model A and B (Original)  | Model A+, B+ and B2
 - the device name 'll be the 'Filesystem' name minus the partition number  
   ex: for '```/dev/mmcblk0p1```' it'll be '```/dev/mmcblk0```', for '```/dev/sdd1```', '```/dev/sdd```'
 
+- to only list the connected SD cards ( if they use the standard naming system ), run:  
+  ```df -h | head -1; df -h | grep 'mmcblk\|sdd' | cat```
+
 - unmount any partition related to the SD card using ```unmount /dev/<SC_card_filesys><partition>```  
   ex, for the first partition of '```/dev/mmcblk0p1```':  
   '```unmount /dev/mmcblk0p1```'
