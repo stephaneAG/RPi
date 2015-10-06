@@ -1,4 +1,4 @@
-RPi
+<img width="50px" src="https://www.raspberrypi.org/wp-content/themes/mind-control/images/logo-black.png"></img>RPi
 ===
 
 Some handy Raspberry Pi stuff ;)
