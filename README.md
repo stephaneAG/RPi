@@ -36,7 +36,7 @@ Model A and B (Original)  | Model A+, B+ and B2
 - to see some progress about the operation, as ```dd``` doesn't giv any, we can use the following:  
   - to get an update on the progress: ```sudo pkill -USR1 -n -x dd```
   - to get updates on the progress: ```watch -n5 'sudo kill -USR1 $(pgrep ^dd)'```
-  - other ways to do so: <a href="http://askubuntu.com/questions/215505/how-do-you-monitor-the-progress-of-dd">Ask Ubuntu - monitor the progress of dd</a>
+  - other ways to do so ( ```pv```, ```dcfldd```): <a href="http://askubuntu.com/questions/215505/how-do-you-monitor-the-progress-of-dd">Ask Ubuntu - monitor the progress of dd</a>
 
 ## Bypass/replace a lost password
 Nb: this should also work for ANY linux system ;)
