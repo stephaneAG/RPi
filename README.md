@@ -1,5 +1,4 @@
-<img width="50px" src="https://www.raspberrypi.org/wp-content/themes/mind-control/images/logo-black.png"></img>RPi
-===
+<img width="60px" src="https://www.raspberrypi.org/wp-content/themes/mind-control/images/logo-black.png"></img>
 
 Some handy Raspberry Pi stuff ;)
 
