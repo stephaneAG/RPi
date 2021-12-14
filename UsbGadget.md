@@ -57,6 +57,7 @@ R: MY cmdline.txt looks like
 So, maybe ```sudo modprobe -r g_ether``` & then retry ```sudo modprobe g_mass_storage file=/piusb.bin stall=0 ro=1```
 Nb: after testing, 'sudo modprobe -r g_ether' removes the 'RNDIS/EthernetGadget' present in Mac OS lapotop >Network settings ..
 Nb2: & after issuing 'sudo modprobe g_mass_storage file=/piusb.bin stall=0 ro=1' over ssh, a 'NONAME' device appeared ;P
+Nb3: if desiring a read/write device, use the following instead: ```sudo modprobe g_mass_storage file=/piusb.bin stall=0 removable=y ro=0```
 3: if using 'libcomposite', do the configuration after boot (systemd service, rc.local, crontab, etc).
 
 
