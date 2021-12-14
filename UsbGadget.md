@@ -34,7 +34,31 @@ Main goal(s):
 - ?
 - camera
 
-====
+## DEBUG
+from 'https://gist.github.com/gbaman/50b6cca61dd1c3f88f41'
+we can read that ```Need to now pick which module you want to use from the list above, for example for ethernet echo "g_ether" | sudo tee -a /etc/modules. You can only pick one of the above modules to use at a time.```
+Hence if cmdline.txt already contains 'modules-load=dwc2,g_ether', this may prevent ```sudo modprobe g_mass_storage file=/piusb.bin stall=0 ro=1``` to work ?
+
+Also, at 'https://forums.raspberrypi.com/viewtopic.php?t=265754' we can read that ```There are kernel modules to emulate a number of USB devices and libcomposite for situations where a combination of devices is needed but not provided by an existing module.```
+Brief guide provided:
+1: /boot/config.txt ```dtoverlay=dwc2,dr_mode=peripheral```
+Ommit ",dr_mode=peripheral" if you're on a zero(w) and want to be able to hot swap between roles.
+R: MY config.txt looks like:
+```
+dtoverlay=vc4-kms-v3d # 'Enable DRM VC4 V3D driver' ( present for newer RPi OS installations it seems )
+..
+dtoverlay=dwc2 # current ethernet gadget implm -> can be 'hot-swappable' for roles :)
+..
+dtoverlay=hifiberry-dac # Pimoroni PirateAudio
+```
+2: /boot/cmdline.txt ```modules-load=dwc2,<gadget module of choice>```
+R: MY cmdline.txt looks like
+``` .. modules-load=dwc2,g_ether```
+So, maybe ```sudo modprobe -r g_ether``` & then retry ```sudo modprobe g_mass_storage file=/piusb.bin stall=0 ro=1```
+Nb: after testing, 'sudo modprobe -r g_ether' removes the 'RNDIS/EthernetGadget' present in Mac OS lapotop >Network settings ..
+Nb2: & after issuing 'sudo modprobe g_mass_storage file=/piusb.bin stall=0 ro=1' over ssh, a 'NONAME' device appeared ;P
+3: if using 'libcomposite', do the configuration after boot (systemd service, rc.local, crontab, etc).
+
 
 ## Mass Storage ( original 'source' tutorial: https://magpi.raspberrypi.com/articles/pi-zero-w-smart-usb-flash-drive )
 
