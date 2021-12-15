@@ -1,5 +1,6 @@
 R: last updated: 14/12/2021
 R: digging infos from the following sources:
+- https://github.com/raspberrypi/firmware/blob/master/boot/overlays/README
 - http://www.linux-usb.org/gadget/
 - USB OR SD: http://www.linux-usb.org/gadget/file_storage.html
 - https://web.archive.org/web/20211123174909/http://linux-sunxi.org/USB_Gadget
@@ -8,10 +9,20 @@ R: digging infos from the following sources:
 - https://magpi.raspberrypi.com/articles/pi-zero-w-smart-usb-flash-drive
 - https://forums.raspberrypi.com/viewtopic.php?t=216810
 - https://randomnerdtutorials.com/raspberry-pi-zero-usb-keyboard-hid/
+- https://github.com/ckuethe/usbarmory/wiki/USB-Gadgets
+- NEAT XPLANATION: http://www.isticktoit.net/?p=1383
+- VERY NICE: https://wiki.tizen.org/USB/Linux_USB_Layers/Configfs_Composite_Gadget
+- ALSO: https://wiki.tizen.org/USB/Linux_USB_Layers/Configfs_Composite_Gadget/General_configuration
+- RECAP: https://www.kernel.org/doc/Documentation/usb/gadget_configfs.txt
 - https://github.com/raspberrypisig/pizero-usb-hid-keyboard
+- https://git.gir.st/hardpass.git/blob/HEAD:/init_usb.sh
 - https://usb.org/sites/default/files/hut1_2.pdf
 - https://stackoverflow.com/questions/21606991/custom-hid-device-hid-report-descriptor
 - https://www.framboise314.fr/un-point-sur-le-device-tree/#Overlays_et_configtxt
+- https://github.com/raspberrypi/linux/issues/1212#issuecomment-165148405
+- https://www.kernel.org/doc/Documentation/usb/gadget-testing.txt
+- https://github.com/alexellis/docker-arm/blob/master/OTG.md
+- https://github.com/Raspberryy/Emulated_USB_Printer
 
 Sources closely related & also how to implm on RPi4:
 - https://howchoo.com/pi/raspberry-pi-gadget-mode
