@@ -2,6 +2,13 @@
 
 Some handy Raspberry Pi stuff ;)
 
+## Datasheets/Schematics
+https://datasheets.raspberrypi.com/
+
+Questionning the USB 'roles' & whre/how it connects:
+- schematic for USB interface question: https://forums.raspberrypi.com/viewtopic.php?t=217858
+- https://raspberrypi.stackexchange.com/questions/127415/are-schematics-available-for-the-newer-rpi-4-with-fixed-usb-c-power-circuit
+
 ## Pinouts
 
 Model A and B (Original)  | Model A+, B+ and B2
