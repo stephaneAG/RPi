@@ -1,0 +1,120 @@
+#!/bin/bash
+
+# == tef_rpiusbcombo v0.01a of 16/12/2021 ==
+# R: https://wiki.tizen.org/USB/Linux_USB_Layers/Configfs_Composite_Gadget
+
+# Mini Conf
+cd /sys/kernel/config/usb_gadget/
+mkdir -p tefrpiusbcombo
+cd tefrpiusbcombo
+#echo 0x1d6b > idVendor # Linux Foundation
+#echo 0x0104 > idProduct # Multifunction Composite Gadget
+#echo 0x0100 > bcdDevice # v1.0.0
+# Tweaked to mimick the 'g_ether' infos, to see if it leads anywhere ..
+echo 0x0525 > idVendor # PLX Technology, Inc.
+echo 0xa4a2 > idProduct #
+echo 0x0100 > bcdDevice # unsure of how to set '5.10'
+echo 0x0200 > bcdUSB # USB2 - sets 'speed' ?
+mkdir -p strings/0x409
+echo "fedcba9876543210" > strings/0x409/serialnumber
+echo "Stephane AG" > strings/0x409/manufacturer
+#echo "TefRpiUsbCombo USB Device" > strings/0x409/product
+echo "RNDIS/Ethernet Gadget" > strings/0x409/product
+mkdir -p configs/c.1/strings/0x409
+#echo "Config 1: ECM network" > configs/c.1/strings/0x409/configuration
+echo "Conf 1: multigadget ECM/CDC/RNDIS" > configs/c.1/strings/0x409/configuration
+echo 250 > configs/c.1/MaxPower
+# -- Add functions here --
+
+
+# ---- Interface: Serial Adapter ----
+mkdir -p functions/acm.usb0
+ln -s functions/acm.usb0 configs/c.1/
+# Usage:
+# enable a console on the USB serial - to be done ONCE on the RPi
+# sudo systemctl enable getty@ttyGS0.service
+# Then, on another system:
+# sudo screen /dev/ttyACM0 115200
+# nb: on my mac: /dev/tty.usbmodem14402
+# dmesg|grep "USB ACM device"
+
+
+# ---- Interface: Keyboard / Mouse / Joystick ( HID ) ----
+mkdir -p functions/hid.usb0
+echo 1 > functions/hid.usb0/protocol
+echo 1 > functions/hid.usb0/subclass
+echo 8 > functions/hid.usb0/report_length
+echo -ne \\x05\\x01\\x09\\x06\\xa1\\x01\\x05\\x07\\x19\\xe0\\x29\\xe7\\x15\\x00\\x25\\x01\\x75\\x01\\x95\\x08\\x81\\x02\\x95\\x01\\x75\\x08\\x81\\x03\\x95\\x05\\x75\\x01\\x05\\x08\\x19\\x01\\x29\\x05\\x91\\x02\\x95\\x01\\x75\\x03\\x91\\x03\\x95\\x06\\x75\\x08\\x15\\x00\\x25\\x65\\x05\\x07\\x19\\x00\\x29\\x65\\x81\\x00\\xc0 > functions/hid.usb0/report_desc
+ln -s functions/hid.usb0 configs/c.1/
+# Usage: nb -> keystrokes not yet tested, YET it already appears as a keyboard to my Mac OS laptop :)
+#sudo su
+#echo -ne "\0\0\x4\0\0\0\0\0" > /dev/hidg0 #press the A-button
+#echo -ne "\0\0\0\0\0\0\0\0" > /dev/hidg0 #release all keys
+
+
+# ---- Interface: Mass Storage ----
+# R: https://wiki.tizen.org/USB/Linux_USB_Layers/Configfs_Composite_Gadget/Usage_eq._to_g_mass_storage.ko
+#FILE=/home/pi/piusb.bin # TEF WIP COMMENTED OUT - not same path as te original tut author
+FILE=/piusb.bin
+#mkdir -p ${FILE/img/d} # TEF WIP COMMENTED OUT
+# mount -o loop,ro,offset=1048576 -t ext4 $FILE ${FILE/img/d} # FOR OLD WAY OF MAKING THE IMAGE
+#mount -o loop,ro, -t vfat $FILE ${FILE/img/d} # FOR IMAGE CREATED WITH DD # TEF WIP COMMENTED OUT --> unsure yet of how it 'mixes' with fstab
+#mount -o loop,ro, -t vfat $FILE /mnt/usb_share # TEF VERSION THAT SHALL WORK: DOES -> way 1: SAMBA/INTERNAL read-only
+mount -o loop,rw,users,umask=000 -t vfat $FILE /mnt/usb_share # TEF VERSION THAT SHALL WORK: DOES -> way 2: SAMBA/INTERNAL read/write
+# R: the above is ( hopefully ) able to replace this line in /etc/fstab: /piusb.bin /mnt/usb_share vfat users,umask=000 0 2
+mkdir -p functions/mass_storage.usb0
+echo 1 > functions/mass_storage.usb0/stall
+echo 0 > functions/mass_storage.usb0/lun.0/cdrom
+echo 1 > functions/mass_storage.usb0/lun.0/removable # tef addition, see http://www.linux-usb.org/gadget/file_storage.html
+#echo 0 > functions/mass_storage.usb0/lun.0/ro # way 1: USB read/write
+echo 1 > functions/mass_storage.usb0/lun.0/ro # way 2: USB read-only
+echo 0 > functions/mass_storage.usb0/lun.0/nofua
+echo $FILE > functions/mass_storage.usb0/lun.0/file
+# R: added after inspecting ls /sys/kernel/config/usb_gadget/tefrpiusbcombo/functions/mass_storage.usb0/lun.0/
+echo "Sandisk" > functions/mass_storage.usb0/lun.0/inquiry_string
+# R: still looking for how to set the 'volume name'
+ln -s functions/mass_storage.usb0 configs/c.1/
+
+
+# ---- Interface: Ethernet Adapter ----
+# R: https://wiki.tizen.org/USB/Linux_USB_Layers/Configfs_Composite_Gadget/Usage_eq._to_g_ether.ko
+#echo "CDC" > configs/c.1/strings/0x409/configuration
+#echo "ECM/CDC" > configs/c.1/strings/0x409/configuration
+#echo "ECM" > configs/c.1/strings/0x409/configuration
+#echo "RNDIS" > configs/c.1/strings/0x409/configuration
+mkdir -p functions/ecm.usb0
+#mkdir -p functions/rndis.usb0 # tef addition to try making it work on my mac os laptop like g_ether did
+# first byte of address must be even
+#HOST="48:6f:73:74:50:43" # "HostPC"
+#SELF="42:61:64:55:53:42" # "BadUSB"
+# trying a fix for Catalina (  https://forums.raspberrypi.com/viewtopic.php?t=255000 )
+HOST="00:22:82:ff:ff:20" # "HostPC"
+SELF="00:22:82:ff:ff:22" # "BadUSB"
+echo $HOST > functions/ecm.usb0/host_addr
+echo $SELF > functions/ecm.usb0/dev_addr
+# R: digging the following we have 'ifname' and 'qmult' as well ls /sys/kernel/config/usb_gadget/tefrpiusbcombo/functions/ecm.usb0/
+ln -s functions/ecm.usb0 configs/c.1/
+#ln -s functions/rndis.usb0 configs/c.1/ # tef addition to try making it work on my mac os laptop like g_ether did
+# R: needs the 2 lines at the bottom of current file to work ( supposedly, untested yet .. )
+
+
+# -- End functions --
+ls /sys/class/udc > UDC
+
+# -- Interface:: Ethernet Adapter > inits: seems not to work yet for me, contrary to g_ether ..  --
+#ifconfig usb0 10.0.0.1 netmask 255.255.255.252 up
+#route add -net default gw 10.0.0.2
+# tef tweak
+#ifconfig usb0 192.168.7.2 netmask 255.255.0.0 up
+#route add -net default gw 192.168.7.1
+#ifconfig usb0 127.0.0.1 netmask 255.255.255.252 up
+#route add -net default gw 127.0.0.2
+#ifconfig usb0 192.168.7.1 netmask 255.255.0.0 up
+#route add -net default gw 192.168.1.1
+
+# tef tryout ..
+#ifconfig usb0 192.168.2.6 netmask 255.255.255.0 network 192.168.2.0 broadcast 192.168.2.255 gateway 192.168.2.6 up
+#route add -net default gw 192.168.2.2
+route add -net default gw 192.0.2.1
+systemctl enable --now dnsmasq.service
+ifdown usb0 && ifup usb0
