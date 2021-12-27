@@ -81,6 +81,7 @@ The 'container' file will act as the storag medium on our SD card ( for the 'sim
 Check the available space on the SD card beforehand using ```df -h```
 Then ( ex for 1Gb ) ```sudo dd bs=1M if=/dev/zero of=/piusb.bin count=1024```
 - 4: format as FAT32 filesystem so that most devices ( ex: TV ) can understand it: ```sudo mkdosfs /piusb.bin -F 32 -I```
+- 4bis: specify a "volume label" while creating the fs: ```sudo mkdosfs -n "RASPBERRYPI" /vfat.fs.bin ... ```
 - 5: mount the 'container' file so we can DL some test files:
 We create a directory on which we can mount the fs ```sudo mkdir /mnt/usb_share```
 Then, we add this to 'fstab', the conf file that records our available disk partitions ```sudo nano /etc/fstab```
