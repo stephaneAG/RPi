@@ -395,7 +395,7 @@ sudo dtc -@ -I dts -O dtb -o /boot/overlays/max3421-spi0.dtbo ./max3421-spi0-ove
   
 R: main identifiable diffs between the .dts used during both of my tries:
   
-![Alt text](Screenshot 2022-01-04 at 00.00.47.png)
+![Alt text](Screenshot%202022-01-04%20at%2000.00.47.png)
 So, if I get things correctly:
 - the '__overrides__' part of the 'new' .dts will allow to specify 'dtparams' within /boot/config.txt to override the defaults present within the final 'fdt'
 - wondering why some fields are not in the same node ( 'pinctrl-names', 'pinctrl-0' )
