@@ -404,3 +404,97 @@ So, if I get things correctly:
   
 Onto reading "https://bootlin.com/blog/enabling-new-hardware-on-raspberry-pi-with-device-tree-overlays/" & try to find some fixes
 Fallback ? for once, ask a pro directly instead of digging the web eating knowledge until xplosion ? ..
+
+So, after a good read & few more digging, I plan on "mixing" both .dts to check which params actually does something / are not deprecated & seeing how this affects how stuff behaves
+```
+# going in the overlays dir
+cd ~/linux/arch/arm/boot/dts/overlays/
+# backing up 'old' one nearly working
+cp ./max3421-spi0-overlay.dts ./max3421-spi0-overlay_old_nearlyWorking.dts
+# edit it in place
+nano ./max3421-spi0-overlay.dts
+# 1) adding 'status= "okay";' seems most obvious starter
+# 2) then, replacing 'max3421@1' by 'usb@2'
+# 3) then, adding 'gpio=8=somethingHere' to 'assert' chip enable on SPI0CE0 using a so-called "firmware directive"
+# 3bis) and 'dtoverlay=spi0,poll_once=off' to poll even after boot complete ( if this works for spi, that is, example from bootlin was on sdio )
+# 4) try changing the 'interrupt' from <25 0x2> to '<25 8>'
+# 5) try reducing by half the spi-max-frequency
+# 6) try using 'pinctrl-0' stuff & 'cs-gpio' stuff in '__overlay__' while having the other ones in 'max3421: ...@num'
+# 7) try adding '#gpio-controller;' & ' #gpio-cells = <2>;' in 'max3421: ...@num'
+#
+
+# backing up 'old' one nearly working
+sudo mv /boot/overlays/max3421-spi0.dtbo /boot/overlays/max3421-spi0_old_nearlyWorking.dtbo
+# generate & automatically put where it belongs ( /boot/overlays/ )
+sudo dtc -@ -I dts -O dtb -o /boot/overlays/max3421-spi0.dtbo ./max3421-spi0-overlay.dts
+# few warnings ( & possibly some not capture )
+/boot/overlays/max3421-spi0.dtbo: Warning (unit_address_vs_reg): Node /fragment@0 has a unit name, but no reg property
+/boot/overlays/max3421-spi0.dtbo: Warning (unit_address_vs_reg): Node /fragment@0/__overlay__/spidev@0 has a unit name, but no reg property
+/boot/overlays/max3421-spi0.dtbo: Warning (unit_address_vs_reg): Node /fragment@1 has a unit name, but no reg property
+/boot/overlays/max3421-spi0.dtbo: Warning (unit_address_vs_reg): Node /fragment@2 has a unit name, but no reg property
+	
+# making sure our overlays is getting merged in the main device-tree
+sudo vcdbg log msg
+
+# checking how it's displayed once merged
+dtc -I fs /proc/device-tree
+	
+# getting the correct pinmuxing configuration set for the SPI pins
+# sudo raspi-gpio get --> couldn't be installedon my rpi :/
+
+# make sure the 'max3421-hcd' line is commented out ( nb: there is a 'i2c-dev' item at the top of the file )
+sudo nano /etc/modules
+
+# also, remember following comds for debug:
+modinfo max3421-hcd
+#filename:       /lib/modules/4.14.98+/extra/max3421-hcd.ko ---> no won't be loaded with device-tree ?
+#license:        GPL
+#author:         David Mosberger <davidm@egauge.net>
+#description:    MAX3421 USB Host-Controller Driver
+#srcversion:     A0D126FE536963BC94E3535
+#depends:        
+#name:           max3421_hcd
+#vermagic:       4.14.98+ mod_unload modversions ARMv6 p2v8
+#
+	
+lsmod
+cat /proc/modules/
+# to find/edit param for a loaded module ( ex: echo 0 > /sys/module/max3421-hcd/parameters/delay_use )
+ls /sys/module/max3421-hcd/
+# R: in /sys/module/max3421-hcd/driver, we find 'spi:\max3421-hcd'
+	
+# make sure /boot/config.txt has the needed stuff but not too much
+sudo nano /boot/config.txt 
+
+---
+dtparam=spi=on
+# not sure yet for the following, so kept commented out for now
+# dtoverlay=spi,poll_once=off
+# tef edit to force using 1 specific CS line ( even if RPI foundation quote so any gpio can be used as such
+#dtoverlay=spi0-1cs
+# -> to know more, digg: https://www.raspberrypi.com/documentation/computers/raspberry-pi.html#software
+# and Ctr-F 'Name:   spi0-1cs' at https://raw.githubusercontent.com/raspberrypi/firmware/master/boot/overlays/README
+# also try: dtoverlay -h spi0-2cs
+# &: dtoverlay -a | grep spi
+	
+# Enable USB Gadget
+dtoverlay=dwc2
+
+# modded on 15/12/2020 to support MAX3421 ( USB Host Shield )
+# R: the following line prevents booting from same RPI ?!
+# trying to 'force' chip select for below spi peripheral ?
+# Set GPIO8 to be an output set to 0 ( OutPut, DriveLow ), see: https://www.raspberrypi.com/documentation/computers/config_txt.html#gpio
+gpio=8=op,dl
+# max3421 USB Host via SPI
+dtoverlay=max3421-spi0
+---
+
+# --> not making progress but 'regressing': no longer getting 'brfs: File read: /mfs/sd/overlays/max3421-hcd.ko' for 'sudo vcdbg log msg' :/ ..
+# ---> only getting 'brfs: File read: /mfs/sd/overlays/max3421-spi0.dtbo' & 'Loaded overlay 'max3421-spi0''
+# R: if we were to build a full kernel, we should add to [~/linux]/arch/arm/boot/dts/overlays/Makefile the .dtbo to be flattened with the base DT
+#
+# if by some miracle this works ( ex: lsusb listing mountable usb key that is plugged in it, the
+# - add support for GPINx|GPOUTx ( isn't it what '#gpio-controller;' & ' #gpio-cells = <2>;' are there for ? )
+# - use labels for the available GPINx|GPOUTx pins & 'overrides' ( to be able to set those from /boot/config.txt )
+# - add as well  'sysfs' stuff to be able to echo to & cat from their 'files', as well as making sure we can controls these from python or nodejs & cie :)
+# - use it to enhance the current POCs for 'CDJ RT Link' & 'DROUTs' ;P
