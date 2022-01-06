@@ -1,6 +1,9 @@
 ### Steps taken to get the MAX3421 working on RPi 0 W 1.1 as of 06/01/2022
 ##### Nb: some parts on this writeup are not directly related to the object of interest but may help getting some basics ok
 
+### Reminders
+- the RPi forum post to help fellow hacker is here: https://forums.raspberrypi.com/viewtopic.php?t=327187
+
 ### TODO's ( among way to many others .. )
 - learn how to mod & configure a kernel + update it 'the right way' ( either on RPi itself or learn a cross-compiling setup )
 - try connecting LEd's / stuff to the GPOUTx of the Max3421 to debug driving its GPOUTx pins ( once in overlay & later using driver ) using cli/python/nodejs/C/..
