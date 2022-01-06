@@ -1,4 +1,5 @@
 ### R: the present reminder is on how to add an additional "USB Host" port on a RPI via some of its SPI GPIOs ( and while its "data" native Mini-USB port is acting either as slave/host/otg )
+### R for the steps I took to get it working, see max3421_spiUsbHost_working.md :D & links in LINKS_TO_ORGANIZE_AND_TREAT.md
 
 #### Sources 
 ##### USB Host Shield part:
